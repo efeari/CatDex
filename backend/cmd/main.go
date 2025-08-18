@@ -22,7 +22,7 @@ func main() {
 	r.Static("/static", "./uploads")
 
 	// Define API routes
-	r.GET("/api/cats/random", routes.GetRandomCat)
+	r.GET("/api/cats/random", routes.GetRandomCat(database.DB))
 	// r.GET("/api/cats", routes.GetAllCats)
 	// r.GET("/api/cats/:id", routes.GetCatByID)
 	// r.POST("/api/cats", routes.PostCat)
