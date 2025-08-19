@@ -36,14 +36,10 @@ func getRandomCatFromDB(db *sql.DB) (*models.Cat, error) {
 	return &cat, nil
 }
 
-// func getAllCats(c *gin.Context) {
-// 	// Implementation here
-// }
-
-// func getCatByID(c *gin.Context) {
-// 	// Implementation here
-// }
-
-// func postCat(c *gin.Context) {
-// 	// Implementation here
-// }
+func RegisterRoutes(r *gin.Engine, db *sql.DB) {
+	r.GET("/api/cats/random", GetRandomCat(db))
+	// Add other routes here
+	// r.GET("/api/cats", GetAllCats(db))
+	// r.GET("/api/cats/:id", GetCatByID(db))
+	// r.POST("/api/cats", PostCat(db))
+}
