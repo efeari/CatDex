@@ -15,6 +15,22 @@
 *.env
 *.env.test
 
+### react ###
+.DS_*
+*.log
+logs
+**/*.backup.*
+**/*.back.*
+
+node_modules
+bower_components
+
+*.sublime*
+
+psd
+thumb
+sketch
+
 # Test binary, built with `go test -c`
 *.test
 
