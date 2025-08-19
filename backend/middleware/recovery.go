@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//TODO rate limiter
+
 func RecoveryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
