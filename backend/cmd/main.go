@@ -13,6 +13,7 @@ import (
 func main() {
 	// Initialize the database
 	database.InitDB()
+	//gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
 

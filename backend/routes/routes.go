@@ -17,7 +17,19 @@ func GetRandomCat(db *sql.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, cat)
+
+		// Add a new field photo_url
+		catWithURL := map[string]interface{}{
+			"id":          cat.ID,
+			"name":        cat.Name,
+			"dateOfPhoto": cat.DateOfPhoto,
+			"location":    cat.Location,
+			"createdAt":   cat.CreatedAt,
+			// Construct URL for frontend
+			"photo_url": fmt.Sprintf("http://localhost:8080/images/%d", cat.ID),
+		}
+
+		c.JSON(http.StatusOK, catWithURL)
 	}
 }
 
