@@ -3,34 +3,59 @@ import './App.css';
 import CatDetails from './components/CatDetails';
 
 function App() {
-  const [randomCat, setRandomCat] = useState(null);
+  const [currentCat, setCurrentCat] = useState(null);
   const [allCats, setAllCats] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
 
   useEffect(() => {
-    // Fetch random cat on page load
-    fetch('/api/cats/random')
-      .then((response) => response.json())
-      .then((data) => setRandomCat(data));
-
-    // Fetch all cats for the list
-    // fetch('/api/cats')
-    //   .then((response) => response.json())
-    //   .then((data) => setAllCats(data));
+    // initialize page: load a random cat and the list
+    init();
   }, []);
 
+  function checkOk(res) {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  function applyCatResponse(data) {
+    if (!data) return;
+    setCurrentCat(data);
+    setHasNext(Boolean(data.has_next));
+    setHasPrev(Boolean(data.has_previous));
+  }
+
+  function fetchRandomCat() {
+    return fetch('/api/cats/random').then(checkOk);
+  }
+
+  function fetchNext(after) {
+    return fetch(`/api/cats/next?after=${encodeURIComponent(after)}`).then(checkOk);
+  }
+
+  function fetchPrevious(before) {
+    return fetch(`/api/cats/previous?before=${encodeURIComponent(before)}`).then(checkOk);
+  }
+
+  function init() {
+    fetchRandomCat()
+      .then((data) => applyCatResponse(data))
+      .catch(() => {/* ignore for now */});
+  }
+
   const handleNext = () => {
-    // if (currentIndex < allCats.length - 1) {
-    //   setCurrentIndex(currentIndex + 1);
-    //   setRandomCat(allCats[currentIndex + 1]);
-    // }
+    if (!currentCat || !currentCat.created_at) return;
+    fetchNext(currentCat.created_at)
+      .then((data) => applyCatResponse(data))
+      .catch(() => {/* ignore */});
   };
 
   const handlePrevious = () => {
-    // if (currentIndex > 0) {
-    //   setCurrentIndex(currentIndex - 1);
-    //   setRandomCat(allCats[currentIndex - 1]);
-    // }
+    if (!currentCat || !currentCat.created_at) return;
+    fetchPrevious(currentCat.created_at)
+      .then((data) => applyCatResponse(data))
+      .catch(() => {/* ignore */});
   };
 
   return (
@@ -40,26 +65,11 @@ function App() {
       </header>
 
       <main className="main">
-        {randomCat && <CatDetails cat={randomCat} />}
+        {currentCat && <CatDetails cat={currentCat} />}
 
         <div className="navigation-buttons">
-          <button onClick={handlePrevious} disabled={currentIndex === 0}>Previous</button>
-          <button onClick={handleNext} disabled={currentIndex === allCats.length - 1}>Next</button>
-        </div>
-
-        <div className="cat-list">
-          <h3>All Cats</h3>
-          <ul>
-            {allCats.map((cat, index) => (
-              <li key={cat.id} onClick={() => {
-                setCurrentIndex(index);
-                setRandomCat(cat);
-              }}>
-                <img src={cat.photo_path} alt={cat.name} className="list-cat-image" />
-                <span>{cat.name}</span>
-              </li>
-            ))}
-          </ul>
+          <button onClick={handlePrevious} disabled={!hasPrev}>Previous</button>
+          <button onClick={handleNext} disabled={!hasNext}>Next</button>
         </div>
       </main>
     </div>

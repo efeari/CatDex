@@ -5,7 +5,7 @@ import (
 )
 
 type Cat struct {
-	ID          int       `json:"id"`
+	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	DateOfPhoto time.Time `json:"date_of_photo"`
 	Location    string    `json:"location"`

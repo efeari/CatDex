@@ -21,6 +21,7 @@ func main() {
 
 	// Serve static files from the "uploads" directory
 	r.Static("/static", "./uploads")
+	r.Static("/photos", "C:/Users/efear/Documents/VS Code Projects/CatDex/photos")
 
 	// Define API routes
 	routes.RegisterRoutes(r, database.DB)

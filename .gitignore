@@ -43,4 +43,7 @@ sketch
 # Go workspace file
 go.work
 
+# Temporary place to store photos
+photos
+
 # End of https://www.toptal.com/developers/gitignore/api/go
