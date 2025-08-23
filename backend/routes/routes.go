@@ -126,8 +126,8 @@ func getNextCatFromDB(db *sql.DB, after time.Time) (*models.Cat, error) {
 	query := (`
 		SELECT id, name, date_of_photo, location, photo_path, created_at
         FROM cats
-        WHERE created_at < $1
-        ORDER BY created_at DESC
+        WHERE created_at > $1
+        ORDER BY created_at ASC
         LIMIT 1
 	`)
 
@@ -154,7 +154,7 @@ func getPreviousCatFromDB(db *sql.DB, before time.Time) (*models.Cat, error) {
 	query := (`
 		SELECT id, name, date_of_photo, location, photo_path, created_at
         FROM cats
-        WHERE created_at > $1
+        WHERE created_at < $1
         ORDER BY created_at DESC
         LIMIT 1
 	`)
@@ -170,7 +170,7 @@ func getPreviousCatFromDB(db *sql.DB, before time.Time) (*models.Cat, error) {
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, nil // no next cat
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err
