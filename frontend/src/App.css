@@ -10,7 +10,7 @@ body {
 }
 
 .header {
-  background-color: #f57c00;
+  background-color: #C8102E;
   color: white;
   padding: 20px;
 }
@@ -41,10 +41,20 @@ body {
   margin: 20px;
 }
 
-button {
+.navigation-button {
   padding: 10px 20px;
   margin: 5px;
-  background-color: #f57c00;
+  background-color: #C8102E;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.action-button {
+  padding: 10px 20px;
+  margin: 5px;
+  background-color: #1a757b;
   color: white;
   border: none;
   border-radius: 5px;
