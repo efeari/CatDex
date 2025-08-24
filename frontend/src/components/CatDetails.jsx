@@ -2,7 +2,7 @@ import './CatDetails.css';
 
 function CatDetails({ cat }) {
   if (!cat) {
-    return <p>No cat selected</p>;
+    return <p>No cats found!</p>;
   }
 
   return (

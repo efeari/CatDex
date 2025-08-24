@@ -21,11 +21,15 @@ function App() {
     return res.json();
   }
 
-  function applyCatResponse(data) {
-    if (!data) return;
-    setCurrentCat(data);
-    setHasNext(Boolean(data.has_next));
-    setHasPrev(Boolean(data.has_previous));
+  function applyCatResponse(response) {
+    if (!response) return;
+    if (response.OK) {
+      setCurrentCat(response.Data);
+      setHasNext(Boolean(response.Data.has_next));
+      setHasPrev(Boolean(response.Data.has_previous));
+    }
+    else
+      setCurrentCat(null);
   }
 
   function fetchRandomCat() {
@@ -42,21 +46,21 @@ function App() {
 
   function init() {
     fetchRandomCat()
-      .then((data) => applyCatResponse(data))
+      .then((response) => applyCatResponse(response))
       .catch(() => {/* ignore for now */});
   }
 
   const handleNext = () => {
     if (!currentCat || !currentCat.created_at) return;
     fetchNext(currentCat.created_at)
-      .then((data) => applyCatResponse(data))
+      .then((response) => applyCatResponse(response))
       .catch(() => {/* ignore */});
   };
 
   const handlePrevious = () => {
     if (!currentCat || !currentCat.created_at) return;
     fetchPrevious(currentCat.created_at)
-      .then((data) => applyCatResponse(data))
+      .then((response) => applyCatResponse(response))
       .catch(() => {/* ignore */});
   };
 
@@ -70,7 +74,7 @@ function App() {
       </header>
 
       <main className="main">
-        {currentCat && <CatDetails cat={currentCat} />}
+        {<CatDetails cat={currentCat} />}
 
         {showUpload && (
           <UploadModal
@@ -78,7 +82,7 @@ function App() {
             onSuccess={() => {
               setShowUpload(false);
               // refresh random cat
-              fetchRandomCat().then((data) => applyCatResponse(data)).catch(() => {});
+              fetchRandomCat().then((response) => applyCatResponse(response)).catch(() => {});
             }}
           />
         )}

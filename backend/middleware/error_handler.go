@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	response "github.com/efear/catdex/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,10 +14,11 @@ func ErrorHandler() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
-
-			c.JSON(http.StatusInternalServerError, map[string]any{
-				"success": false,
-				"message": err.Error(),
+			c.JSON(http.StatusInternalServerError, response.APIResponse{
+				OK:      false,
+				Data:    nil,
+				Reason:  "server_error",
+				Message: err.Error(),
 			})
 		}
 	}

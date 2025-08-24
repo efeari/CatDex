@@ -11,18 +11,24 @@ import (
 	"time"
 
 	"github.com/efear/catdex/models"
+	response "github.com/efear/catdex/utils"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 func GetRandomCat(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var err error = nil
 		fmt.Println("Getting random cat")
 		cat, err := getRandomCatFromDB(db)
 		if err != nil {
+			// Distinguish empty DB from other DB errors so frontend can act accordingly
+			if err == sql.ErrNoRows || cat == nil {
+				response.Fail(c, "no_cats", "No cats available")
+				return
+			}
+
 			c.Error(errors.New("failed to get a random cat"))
-			return
 		}
 
 		c.JSON(http.StatusOK, buildCatResponse(cat, db))
