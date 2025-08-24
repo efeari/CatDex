@@ -2,6 +2,7 @@ package routes
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,10 +17,11 @@ import (
 
 func GetRandomCat(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var err error = nil
 		fmt.Println("Getting random cat")
 		cat, err := getRandomCatFromDB(db)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Error(errors.New("failed to get a random cat"))
 			return
 		}
 
@@ -44,6 +46,13 @@ func getRandomCatFromDB(db *sql.DB) (*models.Cat, error) {
 
 func buildCatResponse(cat *models.Cat, db *sql.DB) map[string]interface{} {
 	photoFilename := filepath.Base(cat.PhotoPath)
+	photoPath := filepath.Join("../../photos", photoFilename)
+
+	// Check if the photo file exists
+	photoURL := fmt.Sprintf("http://localhost:8080/photos/%s", photoFilename)
+	if _, err := os.Stat(photoPath); os.IsNotExist(err) {
+		photoURL = "http://localhost:8080/photos/placeholder.png" // Placeholder image URL
+	}
 
 	// determine availability of neighbors
 	nextCat, _ := getNextCatFromDB(db, cat.CreatedAt)
@@ -55,7 +64,7 @@ func buildCatResponse(cat *models.Cat, db *sql.DB) map[string]interface{} {
 		"date_of_photo": cat.DateOfPhoto,
 		"location":      cat.Location,
 		"created_at":    cat.CreatedAt,
-		"photo_url":     fmt.Sprintf("http://localhost:8080/photos/%s", photoFilename),
+		"photo_url":     photoURL,
 		"has_next":      nextCat != nil,
 		"has_previous":  prevCat != nil,
 	}
@@ -71,7 +80,7 @@ func GetCatByID(db *sql.DB) gin.HandlerFunc {
 			WHERE id = $1;
 		`, id)
 		if err := row.Scan(&cat.ID, &cat.Name, &cat.DateOfPhoto, &cat.Location, &cat.PhotoPath, &cat.CreatedAt); err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Cat not found"})
+			c.Error(errors.New("cat not found"))
 			return
 		}
 
@@ -84,17 +93,17 @@ func GetNextCat(db *sql.DB) gin.HandlerFunc {
 		afterStr := c.Query("after")
 		after, err := time.Parse(time.RFC3339, afterStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date"})
+			c.Error(errors.New("invalid date provided"))
 			return
 		}
 
 		cat, err := getNextCatFromDB(db, after)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Error(errors.New("database error"))
 			return
 		}
 		if cat == nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "no next cat"})
+			c.Error(errors.New("no next cat found"))
 			return
 		}
 
@@ -107,17 +116,17 @@ func GetPreviousCat(db *sql.DB) gin.HandlerFunc {
 		beforeStr := c.Query("before")
 		before, err := time.Parse(time.RFC3339, beforeStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date"})
+			c.Error(errors.New("invalid date provided"))
 			return
 		}
 
 		cat, err := getPreviousCatFromDB(db, before)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Error(errors.New("database error"))
 			return
 		}
 		if cat == nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "no previous cat"})
+			c.Error(errors.New("no previous cat found"))
 			return
 		}
 
@@ -189,7 +198,7 @@ func PostCat(db *sql.DB) gin.HandlerFunc {
 
 		file, err := c.FormFile("photo")
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Photo upload failed"})
+			c.Error(errors.New("file upload failed"))
 			return
 		}
 
@@ -203,14 +212,14 @@ func PostCat(db *sql.DB) gin.HandlerFunc {
 		// Ensure folder exists
 		err = os.MkdirAll("../../photos", os.ModePerm)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create photos folder"})
+			c.Error(errors.New("failed to create photos folder"))
 			return
 		}
 
 		// Open uploaded file
 		src, err := file.Open()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open uploaded file"})
+			c.Error(errors.New("failed to open uploaded file"))
 			return
 		}
 		defer src.Close()
@@ -218,7 +227,7 @@ func PostCat(db *sql.DB) gin.HandlerFunc {
 		// Create destination file
 		out, err := os.Create(filepath.Join("../../photos", filename))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file"})
+			c.Error(errors.New("failed to create file"))
 			return
 		}
 		defer out.Close()
@@ -226,7 +235,7 @@ func PostCat(db *sql.DB) gin.HandlerFunc {
 		// Copy content
 		_, err = io.Copy(out, src)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photo"})
+			c.Error(errors.New("failed to save photo"))
 			return
 		}
 
@@ -236,7 +245,7 @@ func PostCat(db *sql.DB) gin.HandlerFunc {
 			VALUES ($1, $2, $3, $4, $5, NOW())
 		`, catID, name, dateOfPhoto, location, filename)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save cat data"})
+			c.Error(errors.New("database rror"))
 			return
 		}
 

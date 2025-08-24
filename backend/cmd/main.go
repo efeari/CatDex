@@ -18,7 +18,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(middleware.RecoveryMiddleware())
-
+	r.Use(middleware.ErrorHandler())
 	// Serve static files from the "uploads" directory
 	r.Static("/static", "./uploads")
 	r.Static("/photos", "C:/Users/efear/Documents/VS Code Projects/CatDex/photos")
