@@ -10,6 +10,7 @@ export default function UploadModal({ onClose, onSuccess }) {
   const [placeName, setPlaceName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [findButtonDisable, setFindButtonDisable] = React.useState(false);
   const inputRef = useRef(null);
 
   function onFileChosen(f) {
@@ -79,6 +80,7 @@ export default function UploadModal({ onClose, onSuccess }) {
 
   async function forwardGeocode(query) {
     try {
+      setFindButtonDisable(true)
       setError(null);
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=1`,
@@ -98,6 +100,8 @@ export default function UploadModal({ onClose, onSuccess }) {
   setPlaceName(`${lon},${lat}`);
     } catch (err) {
       setError('Could not find location');
+    } finally {
+      setFindButtonDisable(false)
     }
   }
 
@@ -189,7 +193,7 @@ export default function UploadModal({ onClose, onSuccess }) {
           <label>Location</label>
           <div className="location-row">
             <input value={location} onChange={(e) => { setLocation(e.target.value); setPlaceName(''); }} placeholder="text or use geolocation" />
-            <button type="button" className="small" onClick={handleFindLocation}>Find</button>
+            <button type="button" className="small" disabled={findButtonDisable} onClick={handleFindLocation}>Find</button>
             <button type="button" className="small" onClick={handleUseLocation}>Use my location</button>
           </div>
           {placeName && <div className="place-name">{placeName}</div>}
