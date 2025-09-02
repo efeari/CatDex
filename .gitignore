@@ -1,5 +1,24 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go
-# Edit at https://www.toptal.com/developers/gitignore?templates=go
+# Created by https://www.toptal.com/developers/gitignore/api/go,cmake,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=go,cmake,visualstudiocode
+
+### CMake ###
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+### CMake Patch ###
+CMakeUserPresets.json
+
+# External projects
+*-prefix/
 
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
@@ -11,25 +30,6 @@
 *.dll
 *.so
 *.dylib
-
-*.env
-*.env.test
-
-### react ###
-.DS_*
-*.log
-logs
-**/*.backup.*
-**/*.back.*
-
-node_modules
-bower_components
-
-*.sublime*
-
-psd
-thumb
-sketch
 
 # Test binary, built with `go test -c`
 *.test
@@ -43,7 +43,26 @@ sketch
 # Go workspace file
 go.work
 
-# Temporary place to store photos
-photos
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
 
-# End of https://www.toptal.com/developers/gitignore/api/go
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+
+.env
+
+# End of https://www.toptal.com/developers/gitignore/api/go,cmake,visualstudiocode
