@@ -3,19 +3,21 @@ package store
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 type Cat struct {
-	ID            int64  `json:"id" db:"id"`
-	Name          string `json:"name" db:"name"` // user_given_name if not a stray cat
-	UserGivenName string `json:"user_given_name" db:"user_given_name"`
-	Description   string `json:"description" db:"description"`
-	Location      string `json:"location" db:"location"`
-	PhotoPath     string `json:"-" db:"photo_path"` // Hidden from JSON
-	PhotoURL      string `json:"photo_url" db:"-"`  // Computed field, not in DB
-	UserID        int64  `json:"user_id" db:"user_id"`
-	CreatedAt     string `json:"created_at" db:"created_at"`
-	LastSeen      string `json:"last_seen" db:"last_seen"`
+	ID            uuid.UUID `json:"id" db:"id"`
+	Name          string    `json:"name" db:"name"` // user_given_name if not a stray cat
+	UserGivenName string    `json:"user_given_name" db:"user_given_name"`
+	Description   string    `json:"description" db:"description"`
+	Location      string    `json:"location" db:"location"`
+	PhotoPath     string    `json:"-" db:"photo_path"` // Hidden from JSON
+	PhotoURL      string    `json:"photo_url" db:"-"`  // Computed field, not in DB
+	UserID        uuid.UUID `json:"user_id" db:"user_id"`
+	CreatedAt     string    `json:"created_at" db:"created_at"`
+	LastSeen      string    `json:"last_seen" db:"last_seen"`
 }
 
 type CatsStore struct {
