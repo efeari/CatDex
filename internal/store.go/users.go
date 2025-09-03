@@ -19,6 +19,10 @@ type UsersStore struct {
 	db *sql.DB
 }
 
+func (s *UsersStore) GetByID(ctx context.Context, uuid uuid.UUID) (*User, error) {
+	return nil, nil
+}
+
 func (s *UsersStore) Create(ctx context.Context, user *User) error {
 	query := `
 	INSERT INTO cats (username, email, password)

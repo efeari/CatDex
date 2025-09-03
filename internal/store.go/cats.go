@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 )
@@ -22,6 +23,35 @@ type Cat struct {
 
 type CatsStore struct {
 	db *sql.DB
+}
+
+func (s *CatsStore) GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error) {
+	query := `
+	SELECT * FROM cats WHERE id = $1;
+	`
+	row := s.db.QueryRowContext(ctx, query, uuid)
+
+	var cat Cat
+	err := row.Scan(
+		&cat.ID,
+		&cat.Name,
+		&cat.Description,
+		&cat.Location,
+		&cat.PhotoPath,
+		&cat.UserID,
+		&cat.CreatedAt,
+		&cat.LastSeen,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &cat, nil
 }
 
 func (s *CatsStore) Create(ctx context.Context, cat *Cat) error {

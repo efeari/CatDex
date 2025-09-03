@@ -36,7 +36,9 @@ func (app *application) mount() http.Handler {
 
 	v1 := r.Group("/v1")
 	v1.GET("/health", app.healthCheckHandler)
+	v1.GET("/cat/:catID", app.getCatHandler)
 
+	v1.POST("/cat", app.createCatHandler)
 	return r
 }
 
