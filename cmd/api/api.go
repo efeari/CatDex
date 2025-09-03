@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const version = "0.0.1"
+
 type application struct {
 	config config
 	store  store.Storage
@@ -18,6 +20,7 @@ type application struct {
 type config struct {
 	addr string
 	db   dbConfig
+	env  string
 }
 
 // Database configuration struct
@@ -30,6 +33,9 @@ type dbConfig struct {
 
 func (app *application) mount() http.Handler {
 	r := gin.Default()
+
+	v1 := r.Group("/v1")
+	v1.GET("/health", app.healthCheckHandler)
 
 	return r
 }
