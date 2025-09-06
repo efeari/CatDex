@@ -10,11 +10,11 @@ import (
 )
 
 type catPayload struct {
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Location    string    `json:"location"`
-	PhotoPath   string    `json:"photo_path"`
-	UserID      uuid.UUID `json:"user_id"`
+	Name        string `json:"name" validate:"required,min=3,max=25"`
+	Description string `json:"description" validate:"required,min=10,max=255"`
+	Location    string `json:"location" validate:"required,min=3,max=50"`
+	//PhotoPath   string    `json:"photo_path"`
+	UserID uuid.UUID `json:"user_id" validate:"required,uuid"`
 }
 
 func (app *application) getCatHandler(c *gin.Context) {
@@ -50,12 +50,17 @@ func (app *application) createCatHandler(c *gin.Context) {
 		return
 	}
 
+	if err := Validate.Struct(payload); err != nil {
+		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	cat := &store.Cat{
 		Name:        payload.Name,
 		Description: payload.Description,
 		Location:    payload.Location,
-		PhotoPath:   payload.PhotoPath,
-		UserID:      payload.UserID,
+		//PhotoPath:   payload.PhotoPath,
+		UserID: payload.UserID,
 	}
 
 	ctx := c.Request.Context()

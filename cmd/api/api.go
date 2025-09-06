@@ -32,6 +32,7 @@ type dbConfig struct {
 }
 
 func (app *application) mount() http.Handler {
+	//gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	v1 := r.Group("/v1")
