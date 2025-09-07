@@ -17,6 +17,22 @@ type catPayload struct {
 	UserID      uuid.UUID `schema:"user_id" json:"user_id"`
 }
 
+func (app *application) deleteCatHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	catIDString := c.Param("catID")
+	catID, err := uuid.Parse(catIDString)
+	if err != nil {
+		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = app.store.Cats.DeleteByID(ctx, catID)
+	if err != nil {
+		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+	}
+}
+
 func (app *application) getCatHandler(c *gin.Context) {
 	catIDString := c.Param("catID")
 	catID, err := uuid.Parse(catIDString)
