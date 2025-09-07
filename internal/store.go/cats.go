@@ -38,6 +38,9 @@ func (s *CatsStore) UpdateByID(ctx context.Context, cat *Cat) error {
 	WHERE id = $5 AND version = $6
 	RETURNING version;
 	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
@@ -62,6 +65,10 @@ func (s *CatsStore) UpdateByID(ctx context.Context, cat *Cat) error {
 
 func (s *CatsStore) DeleteByID(ctx context.Context, uuid uuid.UUID) error {
 	query := `DELETE FROM cats WHERE id = $1;`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	_, err := s.db.ExecContext(ctx, query, uuid)
 
 	if err != nil {
@@ -75,6 +82,10 @@ func (s *CatsStore) GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error) {
 	query := `
 	SELECT * FROM cats WHERE id = $1;
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	row := s.db.QueryRowContext(ctx, query, uuid)
 
 	var cat Cat
@@ -106,6 +117,8 @@ func (s *CatsStore) Create(ctx context.Context, cat *Cat) error {
 	INSERT INTO cats (id, name, description, location, photo_path, user_id)
 	VALUES ($1, $2, $3, $4, $5, $6) RETURNING created_at, last_seen
 	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	err := s.db.QueryRowContext(
 		ctx,
