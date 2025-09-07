@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/efeari/catdex/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -23,6 +24,34 @@ type Cat struct {
 
 type CatsStore struct {
 	db *sql.DB
+}
+
+func (s *CatsStore) UpdateByID(ctx context.Context, cat *Cat) error {
+	query := `
+	UPDATE cats
+	SET name = $1,
+    description = $2,
+    location = $3,
+    last_seen = $4
+	WHERE id = $5;
+	`
+	_, err := s.db.ExecContext(ctx, query, cat.Name, cat.Description, cat.Location, cat.LastSeen, cat.ID)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CatsStore) DeleteByID(ctx context.Context, uuid uuid.UUID) error {
+	query := `DELETE FROM cats WHERE id = $1;`
+	_, err := s.db.ExecContext(ctx, query, uuid)
+
+	if err != nil {
+		return err
+	}
+
+	return utils.DeleteCatPhoto(uuid.String())
 }
 
 func (s *CatsStore) GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error) {

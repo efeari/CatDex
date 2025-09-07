@@ -57,3 +57,24 @@ func HandleCatPhoto(c *gin.Context, catID string) (string, error) {
 
 	return photoPath, nil
 }
+
+func DeleteCatPhoto(catID string) error {
+	dir := "../../photos"
+	pattern := filepath.Join(dir, catID+".*")
+	matches, err := filepath.Glob(pattern)
+	if err != nil {
+		return err
+	}
+
+	if len(matches) == 0 {
+		return fmt.Errorf("no file found for %s.*", catID)
+	}
+
+	for _, file := range matches {
+		err := os.Remove(file)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -19,6 +19,14 @@ type UsersStore struct {
 	db *sql.DB
 }
 
+func (s *UsersStore) UpdateByID(ctx context.Context, user *User) error {
+	return nil
+}
+
+func (s *UsersStore) DeleteByID(ctx context.Context, uuid uuid.UUID) error {
+	return nil
+}
+
 func (s *UsersStore) GetByID(ctx context.Context, uuid uuid.UUID) (*User, error) {
 	return nil, nil
 }

@@ -16,10 +16,14 @@ type Storage struct {
 	Users interface {
 		Create(ctx context.Context, user *User) error
 		GetByID(ctx context.Context, uuid uuid.UUID) (*User, error)
+		DeleteByID(ctx context.Context, uuid uuid.UUID) error
+		UpdateByID(ctx context.Context, user *User) error
 	}
 	Cats interface {
 		Create(ctx context.Context, cat *Cat) error
 		GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error)
+		DeleteByID(ctx context.Context, uuid uuid.UUID) error
+		UpdateByID(ctx context.Context, cat *Cat) error
 	}
 }
 
