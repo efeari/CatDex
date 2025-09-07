@@ -36,6 +36,7 @@ func (app *application) mount() http.Handler {
 	r := gin.Default()
 
 	v1 := r.Group("/v1")
+	v1.Static("/photos", "../../photos")
 	v1.GET("/health", app.healthCheckHandler)
 	v1.GET("/cat/:catID", app.catsContextMiddleware(), app.getCatHandler)
 	v1.DELETE("/cat/:catID", app.catsContextMiddleware(), app.deleteCatHandler)
