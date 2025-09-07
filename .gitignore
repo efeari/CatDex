@@ -66,4 +66,6 @@ go.work
 .env
 
 tmp/
+
+photos/
 # End of https://www.toptal.com/developers/gitignore/api/go,cmake,visualstudiocode

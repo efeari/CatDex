@@ -5,16 +5,16 @@ import (
 	"net/http"
 
 	"github.com/efeari/catdex/internal/store.go"
+	"github.com/efeari/catdex/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type catPayload struct {
-	Name        string `json:"name" validate:"required,min=3,max=25"`
-	Description string `json:"description" validate:"required,min=10,max=255"`
-	Location    string `json:"location" validate:"required,min=3,max=50"`
-	//PhotoPath   string    `json:"photo_path"`
-	UserID uuid.UUID `json:"user_id" validate:"required,uuid"`
+	Name        string    `schema:"name" json:"name"`
+	Description string    `schema:"description" json:"description"`
+	Location    string    `schema:"location" json:"location"`
+	UserID      uuid.UUID `schema:"user_id" json:"user_id"`
 }
 
 func (app *application) getCatHandler(c *gin.Context) {
@@ -45,14 +45,21 @@ func (app *application) getCatHandler(c *gin.Context) {
 
 func (app *application) createCatHandler(c *gin.Context) {
 	var payload catPayload
-	if err := readJSON(c.Writer, c.Request, &payload); err != nil {
-		writeJSONError(c.Writer, 400, err.Error())
+	if err := readForm(c.Writer, c.Request, &payload); err != nil {
+		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
 		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	newUuid := uuid.New().String()
+
+	photoPath, err := utils.HandleCatPhoto(c, newUuid)
+	if err != nil {
+		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
 	}
 
 	cat := &store.Cat{
@@ -63,7 +70,15 @@ func (app *application) createCatHandler(c *gin.Context) {
 		UserID: payload.UserID,
 	}
 
+	cat.ID, err = uuid.Parse(newUuid)
+	if err != nil {
+		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	ctx := c.Request.Context()
+
+	cat.PhotoPath = photoPath
 
 	if err := app.store.Cats.Create(ctx, cat); err != nil {
 		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())

@@ -56,20 +56,20 @@ func (s *CatsStore) GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error) {
 
 func (s *CatsStore) Create(ctx context.Context, cat *Cat) error {
 	query := `
-	INSERT INTO cats (name, description, location, photo_path, user_id)
-	VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at, last_seen
+	INSERT INTO cats (id, name, description, location, photo_path, user_id)
+	VALUES ($1, $2, $3, $4, $5, $6) RETURNING created_at, last_seen
 	`
 
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
+		cat.ID,
 		cat.Name,
 		cat.Description,
 		cat.Location,
 		cat.PhotoPath,
 		cat.UserID,
 	).Scan(
-		&cat.ID,
 		&cat.CreatedAt,
 		&cat.LastSeen,
 	)
