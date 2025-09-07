@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 )
@@ -28,7 +29,33 @@ func (s *UsersStore) DeleteByID(ctx context.Context, uuid uuid.UUID) error {
 }
 
 func (s *UsersStore) GetByID(ctx context.Context, uuid uuid.UUID) (*User, error) {
-	return nil, nil
+	query := `
+	SELECT * FROM users WHERE id = $1;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	row := s.db.QueryRowContext(ctx, query, uuid)
+
+	var user User
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
 
 func (s *UsersStore) Create(ctx context.Context, user *User) error {
