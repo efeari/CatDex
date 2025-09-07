@@ -1,0 +1,1 @@
+ALTER TABLE cats DROP COLUMN version;

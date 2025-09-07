@@ -20,6 +20,7 @@ type Cat struct {
 	UserID        uuid.UUID `json:"user_id" db:"user_id"`
 	CreatedAt     string    `json:"created_at" db:"created_at"`
 	LastSeen      string    `json:"last_seen" db:"last_seen"`
+	Version       int       `json:"version" db:"version"`
 }
 
 type CatsStore struct {
@@ -32,14 +33,30 @@ func (s *CatsStore) UpdateByID(ctx context.Context, cat *Cat) error {
 	SET name = $1,
     description = $2,
     location = $3,
-    last_seen = $4
-	WHERE id = $5;
+    last_seen = $4,
+	version = version + 1
+	WHERE id = $5 AND version = $6
+	RETURNING version;
 	`
-	_, err := s.db.ExecContext(ctx, query, cat.Name, cat.Description, cat.Location, cat.LastSeen, cat.ID)
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		cat.Name,
+		cat.Description,
+		cat.Location,
+		cat.LastSeen,
+		cat.ID,
+		cat.Version).Scan(&cat.Version)
 
 	if err != nil {
-		return err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrNotFound
+		default:
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -70,6 +87,7 @@ func (s *CatsStore) GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error) {
 		&cat.UserID,
 		&cat.CreatedAt,
 		&cat.LastSeen,
+		&cat.Version,
 	)
 	if err != nil {
 		switch {
