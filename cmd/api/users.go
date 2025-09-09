@@ -12,12 +12,12 @@ import (
 func (app *application) getUserHandler(c *gin.Context) {
 	user, ok := getUserFromCtx(c)
 	if !ok {
-		writeJSONError(c.Writer, http.StatusInternalServerError, "user not found in context")
+		app.internalServerError(c, errors.New("user not found in context"))
 		return
 	}
 
 	if err := writeJSON(c.Writer, http.StatusOK, user); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 }
@@ -27,7 +27,7 @@ func (app *application) usersContextMiddleware() gin.HandlerFunc {
 		userIDString := c.Param("userID")
 		userID, err := uuid.Parse(userIDString)
 		if err != nil {
-			writeJSONError(c.Writer, http.StatusBadRequest, "invalid user ID")
+			app.badRequestResponse(c, err)
 			c.Abort()
 			return
 		}
@@ -36,9 +36,9 @@ func (app *application) usersContextMiddleware() gin.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, store.ErrNotFound):
-				writeJSONError(c.Writer, http.StatusNotFound, err.Error())
+				app.notFoundResponse(c, err)
 			default:
-				writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+				app.internalServerError(c, err)
 			}
 			c.Abort()
 			return

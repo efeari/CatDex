@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/efeari/catdex/internal/store.go"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -14,6 +14,7 @@ const version = "0.0.1"
 type application struct {
 	config config
 	store  store.Storage
+	logger *zap.SugaredLogger
 }
 
 // General configuration
@@ -60,7 +61,7 @@ func (app *application) run(mux http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server has started at %s", app.config.addr)
+	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env)
 
 	return srv.ListenAndServe()
 }

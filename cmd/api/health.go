@@ -13,6 +13,6 @@ func (app *application) healthCheckHandler(c *gin.Context) {
 		"version": version,
 	}
 	if err := writeJSON(c.Writer, http.StatusOK, data); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 	}
 }

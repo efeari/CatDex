@@ -27,18 +27,18 @@ type updateCatPayload struct {
 func (app *application) updateCatHandler(c *gin.Context) {
 	cat, ok := getCatsFromCtx(c)
 	if !ok {
-		writeJSONError(c.Writer, http.StatusInternalServerError, "cat not found in context")
+		app.internalServerError(c, errors.New("cat not found"))
 		return
 	}
 
 	var payload updateCatPayload
 	if err := readJSON(c.Writer, c.Request, &payload); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
@@ -56,12 +56,12 @@ func (app *application) updateCatHandler(c *gin.Context) {
 	}
 
 	if err := app.store.Cats.UpdateByID(c.Request.Context(), cat); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 
 	if err := writeJSON(c.Writer, http.StatusOK, cat); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 }
@@ -72,25 +72,25 @@ func (app *application) deleteCatHandler(c *gin.Context) {
 	catIDString := c.Param("catID")
 	catID, err := uuid.Parse(catIDString)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 
 	err = app.store.Cats.DeleteByID(ctx, catID)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 	}
 }
 
 func (app *application) getCatHandler(c *gin.Context) {
 	cat, ok := getCatsFromCtx(c)
 	if !ok {
-		writeJSONError(c.Writer, http.StatusInternalServerError, "cat not found in context")
+		app.internalServerError(c, errors.New("cat not found in context"))
 		return
 	}
 
 	if err := writeJSON(c.Writer, http.StatusOK, cat); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 }
@@ -98,12 +98,12 @@ func (app *application) getCatHandler(c *gin.Context) {
 func (app *application) createCatHandler(c *gin.Context) {
 	var payload catPayload
 	if err := readForm(c.Writer, c.Request, &payload); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (app *application) createCatHandler(c *gin.Context) {
 
 	photoPath, err := utils.HandleCatPhoto(c, newUuid)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 	}
 
 	cat := &store.Cat{
@@ -124,7 +124,7 @@ func (app *application) createCatHandler(c *gin.Context) {
 
 	cat.ID, err = uuid.Parse(newUuid)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		utils.DeleteCatPhoto(newUuid)
 		return
 	}
@@ -134,13 +134,13 @@ func (app *application) createCatHandler(c *gin.Context) {
 	cat.PhotoPath = photoPath
 
 	if err := app.store.Cats.Create(ctx, cat); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		utils.DeleteCatPhoto(newUuid)
 		return
 	}
 
 	if err := writeJSON(c.Writer, http.StatusCreated, cat); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 }
@@ -150,8 +150,7 @@ func (app *application) catsContextMiddleware() gin.HandlerFunc {
 		catIDString := c.Param("catID")
 		catID, err := uuid.Parse(catIDString)
 		if err != nil {
-			writeJSONError(c.Writer, http.StatusBadRequest, "invalid cat ID")
-			c.Abort()
+			app.badRequestResponse(c, errors.New("invalid cat ID"))
 			return
 		}
 
@@ -159,9 +158,9 @@ func (app *application) catsContextMiddleware() gin.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, store.ErrNotFound):
-				writeJSONError(c.Writer, http.StatusNotFound, err.Error())
+				app.notFoundResponse(c, err)
 			default:
-				writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+				app.internalServerError(c, err)
 			}
 			c.Abort()
 			return

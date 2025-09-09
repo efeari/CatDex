@@ -17,12 +17,12 @@ func (app *application) getUserFeedHandler(c *gin.Context) {
 
 	fq, err := fq.Parse(c)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
 	if err := Validate.Struct(fq); err != nil {
-		writeJSONError(c.Writer, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(c, err)
 		return
 	}
 
@@ -30,11 +30,11 @@ func (app *application) getUserFeedHandler(c *gin.Context) {
 
 	feed, err := app.store.Cats.GetGlobalFeed(ctx, fq)
 	if err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 		return
 	}
 
 	if err := writeJSON(c.Writer, http.StatusOK, feed); err != nil {
-		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		app.internalServerError(c, err)
 	}
 }

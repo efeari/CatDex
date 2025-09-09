@@ -2,19 +2,23 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
 	"github.com/efeari/catdex/internal/db"
 	"github.com/efeari/catdex/internal/store.go"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func main() {
+	// Logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	err := godotenv.Load("../../.env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Fatal("Error loading .env file")
 	}
 
 	user := os.Getenv("DB_USER")
@@ -61,20 +65,21 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	//defer db.Close()
 
-	log.Printf("database connection established")
+	logger.Info("database connection established")
 
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }
