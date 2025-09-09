@@ -40,7 +40,7 @@ Think of it as a combination of Pokémon GO, iNaturalist, and Instagram, but exc
 
 ## 🚧 Development Status
 
-**Cat Pokedex is currently under active development!** Here's what's cooking:
+**Cat Pokedex is currently under active development!**
 
 ## 🛠 Tech Stack
 
