@@ -37,13 +37,17 @@ func (app *application) mount() http.Handler {
 
 	v1 := r.Group("/v1")
 	v1.Static("/photos", "../../photos")
+
 	v1.GET("/health", app.healthCheckHandler)
+
 	v1.GET("/cat/:catID", app.catsContextMiddleware(), app.getCatHandler)
 	v1.DELETE("/cat/:catID", app.catsContextMiddleware(), app.deleteCatHandler)
 	v1.PATCH("/cat/:catID", app.catsContextMiddleware(), app.updateCatHandler)
 	v1.POST("/cat", app.createCatHandler)
 
 	v1.GET("/user/:userID", app.usersContextMiddleware(), app.getUserHandler)
+
+	v1.GET("/feed", app.getUserFeedHandler)
 	return r
 }
 

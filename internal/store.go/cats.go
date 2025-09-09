@@ -23,8 +23,77 @@ type Cat struct {
 	Version       int       `json:"version" db:"version"`
 }
 
+type CatFeed struct {
+	Cat
+	UserName string
+}
+
 type CatsStore struct {
 	db *sql.DB
+}
+
+func (s *CatsStore) GetGlobalFeed(ctx context.Context) ([]CatFeed, error) {
+	query :=
+		`
+	SELECT 
+    c.id,
+    c.name,
+    c.description,
+    c.location,
+    c.photo_path,
+    c.user_id,
+    c.created_at,
+    c.last_seen,
+    c.version,
+    u.username
+	FROM cats c
+	JOIN users u ON c.user_id = u.id
+	ORDER BY c.created_at DESC
+	LIMIT 20 OFFSET 0;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	// err = godotenv.Load("../../.env")
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
+
+	// addr := os.Getenv("ADDR")
+
+	var feed []CatFeed
+	for rows.Next() {
+		var c CatFeed
+		err := rows.Scan(
+			&c.ID,
+			&c.Name,
+			&c.Description,
+			&c.Location,
+			&c.PhotoPath,
+			&c.UserID,
+			&c.CreatedAt,
+			&c.LastSeen,
+			&c.Version,
+			&c.UserName,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		//c.PhotoURL = fmt.Sprintf("%s/v1/photos/%s", addr, c.PhotoPath)
+
+		feed = append(feed, c)
+	}
+
+	return feed, nil
 }
 
 func (s *CatsStore) UpdateByID(ctx context.Context, cat *Cat) error {
