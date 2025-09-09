@@ -125,6 +125,7 @@ func (app *application) createCatHandler(c *gin.Context) {
 	cat.ID, err = uuid.Parse(newUuid)
 	if err != nil {
 		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		utils.DeleteCatPhoto(newUuid)
 		return
 	}
 
@@ -134,6 +135,7 @@ func (app *application) createCatHandler(c *gin.Context) {
 
 	if err := app.store.Cats.Create(ctx, cat); err != nil {
 		writeJSONError(c.Writer, http.StatusInternalServerError, err.Error())
+		utils.DeleteCatPhoto(newUuid)
 		return
 	}
 
