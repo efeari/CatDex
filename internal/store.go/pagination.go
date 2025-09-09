@@ -7,9 +7,13 @@ import (
 )
 
 type PaginatedFeedQuery struct {
-	Limit  int    `json:"limit" validate:"gte=1,lte=20"`
-	Offset int    `json:"offset" validate:"gte=0"`
-	Sort   string `json:"sort" validate:"oneof=asc desc"`
+	Limit    int    `json:"limit" validate:"gte=1,lte=20"`
+	Offset   int    `json:"offset" validate:"gte=0"`
+	Sort     string `json:"sort" validate:"oneof=asc desc"`
+	Username string `json:"username"`
+	Name     string `json:"name"` // cat name
+	Location string `json:"location"`
+	Search   string `json:"search"`
 }
 
 func (fq PaginatedFeedQuery) Parse(c *gin.Context) (PaginatedFeedQuery, error) {
@@ -38,6 +42,25 @@ func (fq PaginatedFeedQuery) Parse(c *gin.Context) (PaginatedFeedQuery, error) {
 		fq.Sort = sort
 	}
 
-	return fq, nil
+	username := qs.Get("username")
+	if username != "" {
+		fq.Username = username
+	}
 
+	name := qs.Get("name")
+	if name != "" {
+		fq.Name = name
+	}
+
+	location := qs.Get("location")
+	if location != "" {
+		fq.Location = location
+	}
+
+	search := qs.Get("search")
+	if search != "" {
+		fq.Search = search
+	}
+
+	return fq, nil
 }

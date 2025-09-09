@@ -48,8 +48,13 @@ func (s *CatsStore) GetGlobalFeed(ctx context.Context, fq PaginatedFeedQuery) ([
     u.username
 	FROM cats c
 	JOIN users u ON c.user_id = u.id
+	WHERE 
+    ($1 = '' OR c.name ILIKE '%' || $1 || '%')
+    AND ($2 = '' OR u.username ILIKE '%' || $2 || '%')
+    AND ($3 = '' OR c.description ILIKE '%' || $3 || '%')
+    AND ($4 = '' OR c.location ILIKE '%' || $4 || '%')
 	ORDER BY c.created_at ` + fq.Sort + `
-	LIMIT $1 OFFSET $2;
+	LIMIT $5 OFFSET $6;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -58,6 +63,10 @@ func (s *CatsStore) GetGlobalFeed(ctx context.Context, fq PaginatedFeedQuery) ([
 	rows, err := s.db.QueryContext(
 		ctx,
 		query,
+		fq.Name,
+		fq.Username,
+		fq.Search,
+		fq.Location,
 		fq.Limit,
 		fq.Offset,
 	)
