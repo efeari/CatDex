@@ -26,7 +26,7 @@ type Storage struct {
 		GetByID(ctx context.Context, uuid uuid.UUID) (*Cat, error)
 		DeleteByID(ctx context.Context, uuid uuid.UUID) error
 		UpdateByID(ctx context.Context, cat *Cat) error
-		GetGlobalFeed(ctx context.Context) ([]CatFeed, error)
+		GetGlobalFeed(ctx context.Context, fq PaginatedFeedQuery) ([]CatFeed, error)
 	}
 }
 

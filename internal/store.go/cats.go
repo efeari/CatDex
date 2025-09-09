@@ -32,7 +32,7 @@ type CatsStore struct {
 	db *sql.DB
 }
 
-func (s *CatsStore) GetGlobalFeed(ctx context.Context) ([]CatFeed, error) {
+func (s *CatsStore) GetGlobalFeed(ctx context.Context, fq PaginatedFeedQuery) ([]CatFeed, error) {
 	query :=
 		`
 	SELECT 
@@ -48,14 +48,19 @@ func (s *CatsStore) GetGlobalFeed(ctx context.Context) ([]CatFeed, error) {
     u.username
 	FROM cats c
 	JOIN users u ON c.user_id = u.id
-	ORDER BY c.created_at DESC
-	LIMIT 20 OFFSET 0;
+	ORDER BY c.created_at ` + fq.Sort + `
+	LIMIT $1 OFFSET $2;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query)
+	rows, err := s.db.QueryContext(
+		ctx,
+		query,
+		fq.Limit,
+		fq.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
