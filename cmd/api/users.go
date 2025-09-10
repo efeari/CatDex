@@ -9,6 +9,26 @@ import (
 	"github.com/google/uuid"
 )
 
+func (app *application) activateUserHandler(c *gin.Context) {
+	token := c.Param("token")
+
+	err := app.store.Users.Activate(c.Request.Context(), token)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundResponse(c, err)
+		default:
+			app.internalServerError(c, err)
+		}
+		return
+	}
+
+	if err := writeJSON(c.Writer, http.StatusNoContent, ""); err != nil {
+		app.internalServerError(c, err)
+	}
+
+}
+
 func (app *application) getUserHandler(c *gin.Context) {
 	user, ok := getUserFromCtx(c)
 	if !ok {

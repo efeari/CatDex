@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/efeari/catdex/internal/db"
 	"github.com/efeari/catdex/internal/store.go"
@@ -54,6 +55,9 @@ func main() {
 			maxOpenConnections: dbMaxOpenConns,
 			maxIdleConnections: dbMaxIdleConns,
 			maxIdleTime:        dbMaxIdleTime,
+		},
+		mail: mailConfig{
+			exp: time.Hour * 24,
 		},
 	}
 

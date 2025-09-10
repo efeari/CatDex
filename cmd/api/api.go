@@ -22,6 +22,11 @@ type config struct {
 	addr string
 	db   dbConfig
 	env  string
+	mail mailConfig
+}
+
+type mailConfig struct {
+	exp time.Duration
 }
 
 // Database configuration struct
@@ -49,6 +54,9 @@ func (app *application) mount() http.Handler {
 	v1.GET("/user/:userID", app.usersContextMiddleware(), app.getUserHandler)
 
 	v1.GET("/feed", app.getUserFeedHandler)
+
+	v1.POST("authentication/user", app.registerUserHandler)
+	v1.PUT("/users/activate/:token", app.activateUserHandler)
 	return r
 }
 
